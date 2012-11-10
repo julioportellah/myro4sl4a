@@ -1,5 +1,5 @@
 """
-Scribler para android
+First stable version of myro for sl4a
 
 """
 
@@ -118,7 +118,12 @@ class Scribbler:
 	droid=android.Android()
 	
 	def __init__(self):
-		self.startbluetooth()
+	
+		if not self.droid.bluetoothActiveConnections().result:
+			print "LOL"
+			self.startbluetooth()
+		else:
+			print "TROLOL"
 		self.lock=threading.Lock()
 		##Variables a inicializarse
 		self._lastTranslate = 0
@@ -219,13 +224,18 @@ class Scribbler:
 		print data
 		# print data2
 		# print string.join(t, '')
-		print "La longitud del paquete es: "+str(len(t))
-		print "El char de cero es "+chr(0)
-		print chr(0)*(Scribbler.PACKET_LENGTH - len(t))
-		print (chr(0) * (Scribbler.PACKET_LENGTH - len(t)))[:9]
-		
+		"""
+		This is a group of commands for debbuging. 
+		If you want to see your data written in unicode
+		you must uncomment all this prints and the makeToast
+		"""
+		# print "La longitud del paquete es: "+str(len(t))
+		# print "El char de cero es "+chr(0)
+		# print chr(0)*(Scribbler.PACKET_LENGTH - len(t))
+		# print (chr(0) * (Scribbler.PACKET_LENGTH - len(t)))[:9]	
 		# print data
-		self.droid.makeToast(data)
+		# self.droid.makeToast(data)
+		
 		if self.debug:
 			print "_write:", data, len(data),
 			print "data:",
@@ -283,6 +293,26 @@ class Scribbler:
 		self._lastRotate=0
 		return self._set(Scribbler.SET_MOTORS_OFF)
 	
+	def beep(self, duration, frequency, frequency2 = None):
+		self.lock.acquire() #print "locked acquired"
+        # old = self.ser.timeout
+        # self.ser.setTimeout(duration+2)
+		if frequency2 == None:
+			self._set_speaker(int(frequency), int(duration * 1000))
+		else:
+			self._set_speaker_2(int(frequency), int(frequency2), int(duration * 1000))
+        # v = self.ser.read(Scribbler.PACKET_LENGTH + 11)
+        # if self.debug:
+            # print map(lambda x:"0x%x" % ord(x), v)
+
+        # self.ser.setTimeout(old)
+		self.lock.release()
+		
+	def _set_speaker(self, frequency, duration):            
+		self._write([Scribbler.SET_SPEAKER,duration >> 8,duration % 256,frequency >> 8,frequency % 256])
+        
+	def _set_speaker_2(self, freq1, freq2, duration):
+		self._write([Scribbler.SET_SPEAKER_2,duration >> 8,duration % 256,freq1 >> 8,freq1 % 256,freq2 >> 8,freq2 % 256])
 	
 	def getBattery(self):
 		# try:
