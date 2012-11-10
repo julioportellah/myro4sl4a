@@ -41,7 +41,9 @@ droid = android.Android()
 def main():
 	# test()
 	# move(1.0,0.0)
-	motors(-0.28,0.28)
+	# motors(0.5,0.5)
+	beep(0.03, 784,593)
+	
   
   
 if __name__ == "__main__":
